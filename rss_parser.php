@@ -29,12 +29,12 @@ $rss_list = array(
 );
 
 if($_SERVER['REMOTE_ADDR'] == $_SERVER['SERVER_ADDR']){
-  echo "<h1>News Crawler</h1>";
+  echo "<h1>News Crawler</h1>\n";
   foreach($rss_list as $rss_referral){
     $result = mysqli_query_new(Parser::$mysqli_link, "SELECT MAX(`publish_time`) as `max_date` FROM `news` WHERE `rss_referral` = '%s'",  $rss_referral);
     $result_array = mysqli_fetch_array($result);
     $db_date = intval(strtotime($result_array['max_date']));
-    printf("<ol><li><a href='%s' target='_blank'>%s</a> - after %s</li>", $rss_referral, $rss_referral, date("Y-m-d H:i:s", $db_date));
+    printf("<ol><li><a href='%s' target='_blank'>%s</a> - after %s</li>\n", $rss_referral, $rss_referral, date("Y-m-d H:i:s", $db_date));
     $xml = file_get_contents($rss_referral);
     $doc = @DOMDocument::loadXML($xml);
     if($doc){
@@ -58,13 +58,13 @@ if($_SERVER['REMOTE_ADDR'] == $_SERVER['SERVER_ADDR']){
         }
         if($parse_item->title){
           $parse_item->toDB();
-          printf("<li><a href='%s' target='_blank'>%s</a> 完成</li>", $url, $title);
+          printf("<li><a href='%s' target='_blank'>%s</a> 完成</li>\n", $url, $title);
         } else {
-          printf("<li>匯入失敗 <a href='%s' target='_blank'>%s</a></li>", $url, $title);
+          printf("<li>匯入失敗 <a href='%s' target='_blank'>%s</a></li>\n", $url, $title);
         }
       }
     }
-    printf("</ol>");
+    printf("</ol>\n");
   }
 }
 /*
