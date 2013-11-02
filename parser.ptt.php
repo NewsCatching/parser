@@ -5,6 +5,9 @@ class PttParser extends Parser {
     phpQuery::newDocumentHTML($html);
 
     $this->title = $this->og_title = pq('meta[property="og:title"]')->attr("content");
+    if(!$this->title){
+      $this->title = $this->og_title = pq('head title')->text();
+    }
     $this->og_description = pq('meta[property="og:description"]')->attr("content");
     $body_img = pq('#main-content img:eq(0)');
     if($body_img->length > 0){

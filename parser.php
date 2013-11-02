@@ -187,7 +187,7 @@ class DBParser extends Parser {
   }
 } 
 Parser::$support_url = array(
-  '/\/\/www\.appledaily\.com\.tw\/[a-zA-Z0-9]+\/article\/[a-zA-Z0-9]+\/[0-9]+\/[0-9]+\//'=>AppleParser,
+  '/\/\/[a-zA-Z0-9]+\.appledaily\.com\.tw\/[a-zA-Z0-9]+\/article\/[a-zA-Z0-9]+\/[0-9]+\/[0-9]+/'=>AppleParser,
   '/\/\/disp\.cc\/b\/[a-zA-Z0-9\-]{7}/'=>DispParser, //http://disp.cc/b/62-6Qw2
   '/\/\/(disp\.cc\/b\/).*#\!([a-zA-Z0-9\-]{7})/'=>DispParser, //http://disp.cc/b/62-6Qw2
   '/\/\/www\.ptt\.cc\/bbs\/.*\/M\.[^\/]+\.html/'=>PttParser, //http://www.ptt.cc/bbs/asciiart/M.1383145289.A.4F8.html

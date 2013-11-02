@@ -13,6 +13,7 @@ function DOMinnerHTML(DOMNode $element)
     return $innerHTML; 
 } 
 $rss_list = array(
+  "http://www.appledaily.com.tw/rss/newcreate/kind/rnews/type/new",
   "http://tw.news.yahoo.com/rss/entertainment",
   "http://tw.news.yahoo.com/rss/politics",
   "http://tw.news.yahoo.com/rss/world",
@@ -54,14 +55,16 @@ if($_SERVER['REMOTE_ADDR'] == $_SERVER['SERVER_ADDR']){
         }
 
         $title = $item->getElementsByTagName('title')->item(0)->nodeValue;
-        switch($rss_referral){
-        default:
+        if(strpos($rss_referral, 'www.appledaily.com.tw')!==false){
+          $url = $item->getElementsByTagName('link')->item(0)->nodeValue;
+          $parse_item = new AppleParser($url, $rss_referral);
+        }
+        if(strpos($rss_referral, 'tw.news.yahoo.com')!==false){
           $url = "http://tw.news.yahoo.com/".$item->getElementsByTagName('guid')->item(0)->nodeValue;
           if(substr($url, -5)!='.html'){
             $url.=".html";
           }
           $parse_item = new YahooParser($url, $rss_referral);
-          break;
         }
         if($parse_item->title){
           $parse_item->toDB();
@@ -71,10 +74,9 @@ if($_SERVER['REMOTE_ADDR'] == $_SERVER['SERVER_ADDR']){
         }
       }
     }
-    include('crawler.peopo.php');
-    include('crawler.apple.php');
     printf("</ol>\n");
   }
+  include('crawler.peopo.php');
   printf("現在時間：%s", date("Y-m-d H:i:s"));
 ?>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
