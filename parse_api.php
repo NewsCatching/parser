@@ -11,15 +11,11 @@ output
   guid: md5
 */
 Class ParseAPI {
-  static public $support_url = array(
-    '/\/\/tw\.news\.yahoo\.com\/[^\/]+\.html/'=>YahooParser,
-    '/\/\/www\.peopo\.org\/news\//'=>PeopoParser
-  );
   public static function error($msg){
     return array("error"=>1, "msg"=>$msg);
   }
   public static function request($url, $format="debug"){
-    foreach(self::$support_url as $pattern=>$parser){
+    foreach(Parser::$support_url as $pattern=>$parser){
       if(preg_match($pattern, $url)){
         $result = new $parser($url, "");
       }

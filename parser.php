@@ -4,11 +4,14 @@ include('mysql.php');
 include('phpquery.php');
 class Parser {
   public static $mysqli_link;
+  public static $support_url;
   public $title;
   public $body;
   public $url;
   public $guid;
   public $og_image;
+  public $pic_path;
+  public $thumb_path;
   public $og_title;
   public $og_description;
   public $referral;
@@ -18,12 +21,40 @@ class Parser {
   public $update_time;
   public $raw;
   public $is_support;
+  public $is_headline;
   function __construct($url, $rss_referral="") {
+    if($rss_referral == "FROM_DB"){
+      $result = mysqli_query_new(Parser::$mysqli_link, "SELECT * FROM `news` WHERE `guid` = '%s' LIMIT 1", md5($url));
+      if(mysqli_num_rows($result)) {
+        $rows = mysqli_fetch_array($result);
+        $this->title = $rows['title'];
+        $this->body = $rows['body'];
+        $this->url = $rows['url'];
+        $this->guid = $rows['guid'];
+        $this->og_image = $rows['og_image'];
+        $this->pic_path = $rows['pic_path'];
+        $this->thumb_path = $rows['thumb_path'];
+        $this->og_title = $rows['og_title'];
+        $this->og_description = $rows['og_description'];
+        $this->referral = $rows['referral'];
+        $this->rss_referral = $rows['rss_referral'];
+        $this->publish_time = $rows['publish_time'];
+        $this->create_time = $rows['create_time'];
+        $this->update_time = $rows['update_time'];
+        $this->raw = $rows['raw'];
+        $this->is_support = $rows['is_support'];
+        $this->is_headline = $rows['is_headline'];
+        return;
+      } else {
+        throw new Exception("the url: ".$url." is not in DB");
+      }
+    } 
     $this->url = $url;
     $this->rss_referral = $rss_referral;
     $this->guid = md5($url);
     $this->raw = file_get_contents2($url);
     $this->is_support = 0;
+    $this->is_headline = 0;
     $this->create_time = date("Y-m-d H:i:s");
     $this->update_time = date("Y-m-d H:i:s");
     $this->publish_time = "0000-00-00 00:00:00";
@@ -47,6 +78,8 @@ class Parser {
       "url"=>$this->url,
       "guid"=>$this->guid,
       "og_image"=>$this->og_image,
+      "pic_path"=>$this->pic_path,
+      "thumb_path"=>$this->thumb_path,
       "og_title"=>$this->og_title,
       "og_description"=>$this->og_description,
       "referral"=>$this->referral,
@@ -55,7 +88,8 @@ class Parser {
       "create_time"=>$this->create_time,
       "update_time"=>$this->update_time,
       "raw"=>$this->raw,
-      "is_support"=>$this->is_support
+      "is_support"=>$this->is_support,
+      "is_headline"=>$this->is_headline
     );
     return $result;
   }
@@ -64,9 +98,21 @@ class Parser {
   }
   public function toDB(){
     global $cfg;
+    if($this->og_image){
+      $img = @imagecreatefromstring(@file_get_contents2($this->og_image));
+      if(@imagesx($img) && @imagesy($img)){ //有寬高，表示有抓到圖
+        $this->pic_path = sprintf('%s%s.png', $cfg['pic_dir'], $this->guid);
+        $this->thumb_path = sprintf('%s%s_t.png', $cfg['pic_dir'], $this->guid);
+        imagepng($img, $this->pic_path);
+        imagepng(imageresize($img, 200, 200), $this->thumb_path);
+      } else {
+        $this->og_image = "";
+      }
+    }
+
     $sqlArray = self::query(
-      'title', 'body', 'url', 'guid', 'og_image', 'og_description', 'og_title',
-      'referral', 'rss_referral', 'publish_time', 'create_time', 'update_time', 'raw', 'is_support'
+      'title', 'body', 'url', 'guid', 'og_image', 'pic_path', 'thumb_path', 'og_description', 'og_title',
+      'referral', 'rss_referral', 'publish_time', 'create_time', 'update_time', 'raw', 'is_support', 'is_headline'
     );
     foreach($sqlArray as $key=>$value){
       $sqlArray[$key] = addslashes($value);
@@ -75,37 +121,28 @@ class Parser {
       SELECT `id` FROM `news` WHERE `guid` = '%s'
     ", $sqlArray['guid']);
 
-    if($this->og_image){
-      $img = imagecreatefromstring(file_get_contents2($this->og_image));
-      if(imagesx($img) && imagesy($img)){ //有寬高，表示有抓到圖
-        $pic_path = sprintf('%s%s.png', $cfg['pic_dir'], $this->guid);
-        $thumb_path = sprintf('%s%s_t.png', $cfg['pic_dir'], $this->guid);
-        imagepng($img, $pic_path);
-        imagepng($img, $thumb_path);
-      }
-    }
 
     if($row = mysqli_fetch_array($result)){
       $update_id = $row['id'];
       $result = mysqli_query_new(Parser::$mysqli_link, "
           UPDATE `news` SET
-            `title`='%s', `body`='%s', `publish_time`='%s', `raw`='%s', `pic_path`='%s', `thumb_path`='%s', 
-            `referral`='%s', `update_time`='%s', `is_support`=%d WHERE `id`=%d
+            `title`='%s', `body`='%s', `publish_time`='%s', `raw`='%s', `og_image`='%s', `pic_path`='%s', `thumb_path`='%s', 
+            `referral`='%s', `update_time`='%s', `is_support`=%d, `is_headline`=%d WHERE `id`=%d
         ", 
-        $sqlArray['title'], $sqlArray['body'], $sqlArray['publish_time'], $sqlArray['raw'], $pic_path, $thumb_path, 
-        $sqlArray['referral'], $sqlArray['update_time'], $sqlArray['is_support'], $update_id
+        $sqlArray['title'], $sqlArray['body'], $sqlArray['publish_time'], $sqlArray['raw'], $sqlArray['og_image'], $sqlArray['pic_path'], $sqlArray['thumb_path'], 
+        $sqlArray['referral'], $sqlArray['update_time'], $sqlArray['is_support'], $sqlArray['is_headline'], $update_id
       );
       return $update_id;
     } else {
       $result = mysqli_query_new(Parser::$mysqli_link, "
           INSERT INTO `news` (
             `title`, `body`, `url`, `guid`, `og_image`, `pic_path`, `thumb_path`, `og_description`, `og_title`,
-            `referral`, `rss_referral`, `publish_time`, `create_time`, `update_time`, `raw`, `is_support`
-          ) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', %d)
+            `referral`, `rss_referral`, `publish_time`, `create_time`, `update_time`, `raw`, `is_support`, `is_headline`
+          ) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', %d, %d)
         ", 
         $sqlArray['title'], $sqlArray['body'], $sqlArray['url'], $sqlArray['guid'], $sqlArray['og_image'], $sqlArray['pic_path'], $sqlArray['thumb_path'],
         $sqlArray['og_description'], $sqlArray['og_title'], $sqlArray['referral'], $sqlArray['rss_referral'], $sqlArray['publish_time'], $sqlArray['create_time'], 
-        $sqlArray['update_time'], $sqlArray['raw'], $sqlArray['is_support']
+        $sqlArray['update_time'], $sqlArray['raw'], $sqlArray['is_support'], $sqlArray['is_headline']
       );
       return mysqli_insert_id(parser::$mysqli_link);
     }
@@ -184,6 +221,18 @@ class DefaultParser extends Parser {
     self::parse();
   }
 } 
+class DBParser extends Parser {
+  public function parse(){
+  }
+  function __construct($url) {
+    parent::__construct($url, "FROM_DB");
+    self::parse();
+  }
+} 
+Parser::$support_url = array(
+  '/\/\/tw\.news\.yahoo\.com\/[^\/]+\.html/'=>YahooParser,
+  '/\/\/www\.peopo\.org\/news\//'=>PeopoParser
+);
 if($_SERVER['PHP_SELF'] == "/hackday2013/parser.php"){
   $peopo_item = new DefaultParser(
     "https://www.youtube.com/watch?v=mTSuiGubCHE",

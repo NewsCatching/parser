@@ -1,26 +1,10 @@
 <?
 include('parser.php');
-class DefaultParser extends Parser {
-  public function parse(){
-    $html = $this->raw;
-    $html = preg_replace('/<head [^>]*>/', '<head>', $html, 1);
-    phpQuery::newDocumentHTML($html);
-    $this->title = pq("title")->text();
-    $this->og_title = pq('meta[property="og:title"]')->attr("content");
-    if($this->og_title) $this->title = $this->og_title;
-    $this->og_description = pq('meta[property="og:description"]')->attr("content");
-    $this->og_image = pq('meta[property="og:image"]')->attr("content");
-  }
-  function __construct($url, $rss_referral) {
-    parent::__construct($url, $rss_referral);
-    self::parse();
-  }
-} 
 if($_SERVER['PHP_SELF'] == "/hackday2013/parser_test.php"){
-  $peopo_item = new DefaultParser(
-    "https://www.youtube.com/watch?v=mTSuiGubCHE",
-    "http://tw.news.yahoo.com/rss/few"
+  $db_item = new DBParser(
+    "http://tw.news.yahoo.com/nba--%E7%90%83%E9%9E%8B%E7%BE%A9%E8%B3%A3%E6%8B%8D%E5%BE%9777%E8%90%AC-%E6%9E%97%E6%9B%B8%E8%B1%AA%E9%8C%84%E5%BD%B1%E8%AC%9D%E8%B2%B7%E4%B8%BB-070009566"
   );
-  exit_r($peopo_item->toString());
+  $db_item->toDB();
+  exit_r($db_item->toString());
 }
 ?>
