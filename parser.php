@@ -1,5 +1,5 @@
 <?
-include('../include/debug.php');
+include('debug.php');
 include('mysql.php');
 include('phpquery.php');
 class Parser {
@@ -20,7 +20,7 @@ class Parser {
   public $update_time;
   public $raw;
   public $is_support;
-  function __construct($url, $rss_referral) {
+  function __construct($url, $rss_referral="") {
     $this->url = $url;
     $this->rss_referral = $rss_referral;
     $this->guid = md5($url);
@@ -30,6 +30,8 @@ class Parser {
     $this->ref_counter = 0;
     $this->create_time = date("Y-m-d H:i:s");
     $this->update_time = date("Y-m-d H:i:s");
+    $this->publish_time = "0000-00-00 00:00:00";
+    $this->referral = "Internet";
   }
   public function query(){
     $self_full = self::toArray();
@@ -83,6 +85,7 @@ class Parser {
       $sqlArray['title'], $sqlArray['body'], $sqlArray['url'], $sqlArray['guid'], $sqlArray['og_image'], $sqlArray['og_description'], $sqlArray['og_title'],
       $sqlArray['referral'], $sqlArray['rss_referral'], $sqlArray['publish_time'], $sqlArray['create_time'], $sqlArray['raw'], $sqlArray['is_support']
     );
+    return mysqli_insert_id(parser::$mysqli_link);
   }
 }
 Parser::$mysqli_link = mysqli_link_utf8();
@@ -142,7 +145,30 @@ class PeopoParser extends Parser {
     self::parse();
   }
 } 
-
+class DefaultParser extends Parser {
+  public function parse(){
+    $html = $this->raw;
+    $html = preg_replace('/<head [^>]*>/', '<head>', $html, 1);
+    phpQuery::newDocumentHTML($html);
+    $this->title = pq("title")->text();
+    $this->og_title = pq('meta[property="og:title"]')->attr("content");
+    if($this->og_title) $this->title = $this->og_title;
+    $this->og_description = pq('meta[property="og:description"]')->attr("content");
+    $this->og_image = pq('meta[property="og:image"]')->attr("content");
+  }
+  function __construct($url, $rss_referral) {
+    parent::__construct($url, $rss_referral);
+    self::parse();
+  }
+} 
+if($_SERVER['PHP_SELF'] == "/hackday2013/parser.php"){
+  $peopo_item = new DefaultParser(
+    "https://www.youtube.com/watch?v=mTSuiGubCHE",
+    "http://tw.news.yahoo.com/rss/few"
+  );
+  exit_r($peopo_item->toString());
+}
+/* Test Case PeopoParser
 if($_SERVER['PHP_SELF'] == "/hackday2013/parser.php"){
   $peopo_item = new PeopoParser(
     "https://www.peopo.org/news/221631",
@@ -150,7 +176,7 @@ if($_SERVER['PHP_SELF'] == "/hackday2013/parser.php"){
   );
   exit_r($peopo_item->toString());
 }
-
+*/
 /* Test Case Yahoo
 if($_SERVER['PHP_SELF'] == "/hackday2013/parser.php"){
   $yahoo_item = new YahooParser(

@@ -14,7 +14,7 @@ output
 */
 include('debug.php');
 include('OpenGraph.php');
-Class OG {
+Class OGAPI {
   public static function error($msg){
     return array("error"=>1, "msg"=>$msg);
   }
@@ -27,7 +27,7 @@ Class OG {
       $result[$key] = $value;
     }
     if(!$result['url']){
-      return self::error("OG URL 不存在");
+      $result['url'] = $url;
     }
     $result = array(
       'error'=>0,
@@ -46,5 +46,6 @@ Class OG {
 }
 if($_SERVER['PHP_SELF'] == "/hackday2013/og_api.php"){
   $url =$_GET['url'];
-  exit_r(OG::request($url, 'debug'));
+  exit_r(OGAPI::request($url, 'debug'));
 }
+

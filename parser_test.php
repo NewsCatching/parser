@@ -1,38 +1,24 @@
 <?
 include('parser.php');
-class PeopoParser extends Parser {
+class DefaultParser extends Parser {
   public function parse(){
     $html = $this->raw;
-    $html = str_replace('<head profile="http://www.w3.org/1999/xhtml/vocab">', '<head>', $html);
+    $html = preg_replace('/<head [^>]*>/', '<head>', $html, 1);
     phpQuery::newDocumentHTML($html);
-    $this->title = pq("h1.page-title")->text();
-    if(pq('.field.field-name-field-video-id')->length > 0){
-      $embed_code = pq('#embed-code')->attr('value');
-      preg_match('/ src=[\"\']([^\"\']+)[\"\']/i', $embed_code, $matches);
-      if($matches){
-        pq('.field.field-name-body')->append(sprintf("<h3>新聞相關影音</h3><a target=\"_blank\" href=\"%s\" class=\"news-catch-link\">前往觀看</a>", $matches[1]));
-      }
-    }
-    $this->body = pq('.field.field-name-body')->html();
+    $this->title = pq("title")->text();
     $this->og_title = pq('meta[property="og:title"]')->attr("content");
+    if($this->og_title) $this->title = $this->og_title;
     $this->og_description = pq('meta[property="og:description"]')->attr("content");
-    $body_img = pq('.field.field-name-body img:eq(0)');
-    if($body_img->length > 0){
-      $this->og_image = $body_img->attr("src");
-    } else {
-      $this->og_image = pq('meta[property="og:image"]')->attr("content");
-    }
-    $this->referral = "PeoPo 公民新聞";
-    $this->publish_time = date("Y-m-d H:i:s", strtotime(str_replace('.','-',pq('div.submitted:eq(0) span')->text())));
+    $this->og_image = pq('meta[property="og:image"]')->attr("content");
   }
   function __construct($url, $rss_referral) {
     parent::__construct($url, $rss_referral);
     self::parse();
   }
 } 
-if($_SERVER['PHP_SELF'] == "/hackday2013/test.php"){
-  $peopo_item = new PeopoParser(
-    "https://www.peopo.org/news/221631",
+if($_SERVER['PHP_SELF'] == "/hackday2013/parser_test.php"){
+  $peopo_item = new DefaultParser(
+    "https://www.youtube.com/watch?v=mTSuiGubCHE",
     "http://tw.news.yahoo.com/rss/few"
   );
   exit_r($peopo_item->toString());
