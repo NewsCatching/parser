@@ -13,7 +13,6 @@ function DOMinnerHTML(DOMNode $element)
     return $innerHTML; 
 } 
 $rss_list = array(
-  "https://www.peopo.org/peopo_agg/feed?post_u=286",
   "http://tw.news.yahoo.com/rss/entertainment",
   "http://tw.news.yahoo.com/rss/politics",
   "http://tw.news.yahoo.com/rss/world",
@@ -56,10 +55,6 @@ if($_SERVER['REMOTE_ADDR'] == $_SERVER['SERVER_ADDR']){
 
         $title = $item->getElementsByTagName('title')->item(0)->nodeValue;
         switch($rss_referral){
-        case "https://www.peopo.org/peopo_agg/feed?post_u=286":
-          $url = $item->getElementsByTagName('link')->item(0)->nodeValue;
-          $parse_item = new PeopoParser($url, $rss_referral);
-          break;
         default:
           $url = "http://tw.news.yahoo.com/".$item->getElementsByTagName('guid')->item(0)->nodeValue;
           if(substr($url, -5)!='.html'){
@@ -76,6 +71,8 @@ if($_SERVER['REMOTE_ADDR'] == $_SERVER['SERVER_ADDR']){
         }
       }
     }
+    include('crawler.peopo.php');
+    include('crawler.apple.php');
     printf("</ol>\n");
   }
   printf("現在時間：%s", date("Y-m-d H:i:s"));

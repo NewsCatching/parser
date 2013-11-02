@@ -157,157 +157,11 @@ class Parser {
   }
 }
 Parser::$mysqli_link = mysqli_link_utf8();
-class YahooParser extends Parser {
-  public function parse(){
-    $html = $this->raw;
-    phpQuery::newDocumentHTML($html);
-
-    $this->title = pq("h1.headline")->text();
-    $this->body = pq('#mediaarticlebody .bd')->html();
-    $this->og_title = pq('meta[property="og:title"]')->attr("content");
-    $this->og_description = pq('meta[property="og:description"]')->attr("content");
-    $this->og_image = pq('meta[property="og:image"]')->attr("content");
-    $this->referral = "Yahoo!新聞";
-    $this->publish_time = date("Y-m-d H:i:s", strtotime(pq('cite.vcard abbr')->attr("title")));
-    if(strpos($this->body, "新聞相關影音") !== false ){
-      $media_src = pq('span.yui-editorial-embed .video-wrap iframe')->attr("src");
-      pq('span.yui-editorial-embed')->replaceWith('<a target="_blank" href="http://tw.news.yahoo.com/'.$media_src.'" class="news-catch-link">前往觀看</a>');
-      $this->body = pq('#mediaarticlebody .bd')->html();
-    }
-    $this->is_support = 1;
-  }
-  function __construct($url, $rss_referral) {
-    parent::__construct($url, $rss_referral);
-    self::parse();
-  }
-} 
-
-class PeopoParser extends Parser {
-  public function parse(){
-    $html = $this->raw;
-    $html = str_replace('<head profile="http://www.w3.org/1999/xhtml/vocab">', '<head>', $html);
-    phpQuery::newDocumentHTML($html);
-    $this->title = pq("h1.page-title")->text();
-    if(pq('.field.field-name-field-video-id')->length > 0){
-      $embed_code = pq('#embed-code')->attr('value');
-      preg_match('/ src=[\"\']([^\"\']+)[\"\']/i', $embed_code, $matches);
-      if($matches){
-        pq('.field.field-name-body')->append(sprintf("<h3>新聞相關影音</h3><a target=\"_blank\" href=\"%s\" class=\"news-catch-link\">前往觀看</a>", $matches[1]));
-      }
-    }
-    $this->body = pq('.field.field-name-body')->html();
-    $this->og_title = pq('meta[property="og:title"]')->attr("content");
-    $this->og_description = pq('meta[property="og:description"]')->attr("content");
-    $body_img = pq('.field.field-name-body img:eq(0)');
-    if($body_img->length > 0){
-      $this->og_image = $body_img->attr("src");
-    } else {
-      $this->og_image = pq('meta[property="og:image"]')->attr("content");
-    }
-    $this->referral = "公民新聞";
-    $this->publish_time = date("Y-m-d H:i:s", strtotime(str_replace('.','-',pq('div.submitted:eq(0) span')->text())));
-    $this->is_support = 1;
-  }
-  function __construct($url, $rss_referral) {
-    parent::__construct($url, $rss_referral);
-    self::parse();
-  }
-} 
-class PttParser extends Parser {
-  public function parse(){
-    $html = $this->raw;
-    phpQuery::newDocumentHTML($html);
-
-    $this->title = $this->og_title = pq('meta[property="og:title"]')->attr("content");
-    $this->og_description = pq('meta[property="og:description"]')->attr("content");
-    $body_img = pq('#main-content img:eq(0)');
-    if($body_img->length > 0){
-      $this->og_image = $body_img->attr("src");
-    } else {
-      $this->og_image = pq('meta[property="og:image"]')->attr("content");
-    }
-    $this->referral = "批踢踢實業坊";
-    $date_dom = pq('#main-content .article-meta-tag:contains("時間"):first');
-    if($date_dom->length == 1){
-      $this->publish_time = date("Y-m-d H:i:s", strtotime($date_dom->next()->text()));
-    } else {
-      $this->publish_time = date("Y-m-d H:i:s");
-    }
-    $youtube_players = pq('iframe.youtube-player');
-    foreach($youtube_players as $player){
-      $src = pq($player)->attr('src');
-      preg_match('/\/embed\/([^\/]+)$/', $src, $matches);
-      if($matches){
-        $video_id = $matches[1];
-        pq($player)->replaceWith(sprintf("<a href=\"http://youtu.be/%s\" target=\"_blank\" data-video-id=\"%s\" class=\"news-catch-link\"><img src=\"http://i.ytimg.com/vi/%s/1.jpg\"></a>", $video_id, $video_id, $video_id));
-      } else if($src){
-        pq($player)->replaceWith(sprintf("<a href=\"%s\" target=\"_blank\" class=\"news-catch-link\">前往觀看</a>", $src));
-      }
-    }
-    $this->body = pq('#main-content')->html();
-    $this->is_support = 1;
-  }
-  function __construct($url, $rss_referral) {
-    parent::__construct($url, $rss_referral);
-    self::parse();
-  }
-}
-class DispParser extends Parser {
-  public function parse(){
-    $html = $this->raw;
-    phpQuery::newDocumentHTML(str_replace('data-src=', 'src=', $html));
-
-    $this->title = $this->og_title = pq('meta[property="og:title"]')->attr("content");
-    $this->og_description = pq('meta[property="og:description"]')->attr("content");
-    $body_img = pq('div:not(.quote_in) > a.img div.img img:eq(0)');
-    if($body_img->length > 0){
-      $this->og_image = $body_img->attr("src");
-    } else {
-      $this->og_image = pq('meta[property="og:image"]')->attr("content");
-    }
-    $this->referral = "Disp.cc";
-    $date_dom = pq('span.TH_index:contains("時間"):first');
-    if($date_dom->length == 1){
-      $date_text = $date_dom->next()->text();
-      if(strpos($date_text, '月')!==false){
-        $date_text = str_replace('月', '-', $date_text);
-        $date_text = str_replace('年', '-', $date_text);
-        $date_text = str_replace('日', '', $date_text);
-        $date_text = explode(' ', $date_text);
-        $tmp = $date_text[4];
-        $date_text[4] = $date_text[3];
-        $date_text[3] = $tmp;
-        $date_text = implode(' ', $date_text);
-
-      }
-      $this->publish_time = date("Y-m-d H:i:s", strtotime($date_text));
-    } else {
-      $this->publish_time = date("Y-m-d H:i:s");
-    }
-    $youtube_players = pq('div.video');
-    foreach($youtube_players as $player){
-      $src = pq($player)->attr('data-src');
-      $vimg_src = pq($player)->find('img')->attr('src');
-      if($matches){
-        $video_id = $matches[1];
-        pq($player)->replaceWith(sprintf("<a href=\"%s\" target=\"_blank\" lass=\"news-catch-link\"><img src=\"%s\"></a>", $src, $vimg_src));
-      } else if($src){
-        pq($player)->replaceWith(sprintf("<a href=\"%s\" target=\"_blank\" class=\"news-catch-link\">前往觀看</a>", $src));
-      }
-    }
-    pq('#text_comment > *:not(#push_text_div)')->remove();
-    $comment_html = pq('#text_comment')->html();
-    $comment_html = str_replace('<div ', '<span ', $comment_html);
-    $comment_html = str_replace('</div>', '</span>', $comment_html);
-    pq('#text')->append($comment_html);
-    $this->body = pq('#text')->html();
-    $this->is_support = 1;
-  }
-  function __construct($url, $rss_referral) {
-    parent::__construct($url, $rss_referral);
-    self::parse();
-  }
-}
+include('parser.yahoo.php');
+include('parser.peopo.php');
+include('parser.ptt.php');
+include('parser.disp.php');
+include('parser.apple.php');
 class DefaultParser extends Parser {
   public function parse(){
     $html = $this->raw;
@@ -333,6 +187,7 @@ class DBParser extends Parser {
   }
 } 
 Parser::$support_url = array(
+  '/\/\/www\.appledaily\.com\.tw\/[a-zA-Z0-9]+\/article\/[a-zA-Z0-9]+\/[0-9]+\/[0-9]+\//'=>AppleParser,
   '/\/\/disp\.cc\/b\/[a-zA-Z0-9\-]{7}/'=>DispParser, //http://disp.cc/b/62-6Qw2
   '/\/\/(disp\.cc\/b\/).*#\!([a-zA-Z0-9\-]{7})/'=>DispParser, //http://disp.cc/b/62-6Qw2
   '/\/\/www\.ptt\.cc\/bbs\/.*\/M\.[^\/]+\.html/'=>PttParser, //http://www.ptt.cc/bbs/asciiart/M.1383145289.A.4F8.html
