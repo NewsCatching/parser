@@ -12,7 +12,7 @@ output
   guid: md5
   og: 
 */
-include('debug.php');
+include('parser.php');
 include('OpenGraph.php');
 Class OGAPI {
   public static $format;
