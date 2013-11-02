@@ -62,6 +62,9 @@ if($_SERVER['REMOTE_ADDR'] == $_SERVER['SERVER_ADDR']){
           break;
         default:
           $url = "http://tw.news.yahoo.com/".$item->getElementsByTagName('guid')->item(0)->nodeValue;
+          if(substr($url, -5)!='.html'){
+            $url.=".html";
+          }
           $parse_item = new YahooParser($url, $rss_referral);
           break;
         }
@@ -77,7 +80,7 @@ if($_SERVER['REMOTE_ADDR'] == $_SERVER['SERVER_ADDR']){
   }
   printf("現在時間：%s", date("Y-m-d H:i:s"));
 ?>
-<script src="../jquery.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
 <script>
   $('li:only-child').map(function(){
       $(this.parentNode).appendTo('body');
