@@ -98,15 +98,27 @@ class Parser {
   }
   public function toDB(){
     global $cfg;
-    if($this->og_image){
+    $pic_path = sprintf('%s%s.png', $cfg['pic_dir'], $this->guid);
+    $thumb_path = sprintf('%s%s_t.png', $cfg['pic_dir'], $this->guid);
+    $result = mysqli_query_new(Parser::$mysqli_link, "
+      SELECT `id`, `thumb_path`, `pic_path` FROM `news` WHERE `guid` = '%s'
+    ", $this->guid);
+    $isEdit = false;
+    if($row = mysqli_fetch_array($result)){
+      $isEdit = true;
+      $this->pic_path = $row['pic_path'];
+      $this->thumb_path = $row['thumb_path'];
+    }
+
+    if($this->og_image && (!file_exists($pic_path) || !$pic_path || !$thumb_path)){
       $img = @imagecreatefromstring(@file_get_contents2($this->og_image));
       if(@imagesx($img) && @imagesy($img)){ //有寬高，表示有抓到圖
-        $this->pic_path = sprintf('%s%s.png', $cfg['pic_dir'], $this->guid);
-        $this->thumb_path = sprintf('%s%s_t.png', $cfg['pic_dir'], $this->guid);
+        $this->pic_path = $pic_path;
+        $this->thumb_path = $thumb_path;
         imagepng($img, $this->pic_path);
         imagepng(imageresize($img, 200, 200), $this->thumb_path);
       } else {
-        $this->og_image = "";
+        $this->pic_path = $this->thumb_path = $this->og_image = "";
       }
     }
 
@@ -117,12 +129,8 @@ class Parser {
     foreach($sqlArray as $key=>$value){
       $sqlArray[$key] = addslashes($value);
     }
-    $result = mysqli_query_new(Parser::$mysqli_link, "
-      SELECT `id` FROM `news` WHERE `guid` = '%s'
-    ", $sqlArray['guid']);
 
-
-    if($row = mysqli_fetch_array($result)){
+    if($isEdit){
       $update_id = $row['id'];
       $result = mysqli_query_new(Parser::$mysqli_link, "
           UPDATE `news` SET
