@@ -17,7 +17,10 @@ Class ParseAPI {
   }
   public static function request($url, $format=""){
     foreach(Parser::$support_url as $pattern=>$parser){
-      if(preg_match($pattern, $url)){
+      if(preg_match($pattern, $url, $matches)){
+        if(strpos($matches[1], 'disp.cc')!==false && $matches[1] && $matches[2]){
+          $url = 'http://'.$matches[1].$matches[2];
+        }
         $result = new $parser($url, "");
       }
     }
