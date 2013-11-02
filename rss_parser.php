@@ -28,7 +28,7 @@ $rss_list = array(
   "http://tw.news.yahoo.com/rss/technology"
 );
 
-if($_SERVER['PHP_SELF'] == "/hackday2013/rss_parser.php"){
+if($_SERVER['REMOTE_ADDR'] == $_SERVER['SERVER_ADDR']){
   echo "<h1>News Crawler</h1>";
   foreach($rss_list as $rss_referral){
     $result = mysqli_query_new(Parser::$mysqli_link, "SELECT MAX(`publish_time`) as `max_date` FROM `news` WHERE `rss_referral` = '%s'",  $rss_referral);
