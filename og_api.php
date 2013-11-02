@@ -13,7 +13,7 @@ output
   og: 
 */
 include('parser.php');
-include('OpenGraph.php');
+include('opengraph.php');
 Class OGAPI {
   public static $format;
   public static function error($msg){
