@@ -29,6 +29,15 @@ $rss_list = array(
 );
 
 if($_SERVER['REMOTE_ADDR'] == $_SERVER['SERVER_ADDR']){
+?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Crawler Log</title>
+</head>
+<body>
+<?
   echo "<h1>News Crawler</h1>\n";
   foreach($rss_list as $rss_referral){
     $result = mysqli_query_new(Parser::$mysqli_link, "SELECT MAX(`publish_time`) as `max_date` FROM `news` WHERE `rss_referral` = '%s'",  $rss_referral);
@@ -66,6 +75,20 @@ if($_SERVER['REMOTE_ADDR'] == $_SERVER['SERVER_ADDR']){
     }
     printf("</ol>\n");
   }
+  printf("現在時間：%s", date("Y-m-d H:i:s"));
+?>
+<script src="../jquery.js"></script>
+<script>
+  $('li:only-child').map(function(){
+      $(this.parentNode).appendTo('body');
+  });
+	setTimeout(function(){
+		location.reload();
+	}, 1800000);
+</script>
+</body>
+</html>
+<?
 }
 /*
 <title>野柳自然中心 新環教場域啟用
@@ -86,14 +109,4 @@ if($_SERVER['REMOTE_ADDR'] == $_SERVER['SERVER_ADDR']){
 <media:credit role="publishing company">
 </media:credit>
 */
-printf("現在時間：%s", date("Y-m-d H:i:s"));
 ?>
-<script src="../jquery.js"></script>
-<script>
-  $('li:only-child').map(function(){
-      $(this.parentNode).appendTo('body');
-  });
-	setTimeout(function(){
-		location.reload();
-	}, 1800000);
-</script>
