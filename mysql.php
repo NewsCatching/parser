@@ -73,7 +73,7 @@ if(!$required_mysql_system){		//如果未include此檔案，則required_msg_box�
 			$fout=fopen("error_logs/".$date.$_SERVER['REMOTE_ADDR'].".txt","w");
 			fwrite($fout,$msg);
 			fclose($fout);
-			if($_SERVER['REMOTE_ADDR']==$_SERVER["SERVER_ADDR"]) echo $msg;
+			if(true || $_SERVER['REMOTE_ADDR']==$_SERVER["SERVER_ADDR"]) echo $msg;
 			printf("MySQL執行過程錯誤，程式強行中止：<br>\r\n錯誤識別碼:<b>%s%s</b>", str_replace(".", "", $_SERVER['REMOTE_ADDR']), $date);
 				?>
 				若一段時間後仍然發生此問題…<br>

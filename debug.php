@@ -57,4 +57,24 @@ if($_SERVER['PHP_SELF'] == "/hackday2013/debug.php"){
   if(!$url) $url = "http://www.facebook.com/photo.php?fbid=10202501501164490&set=np.413901279.663898857&type=1";
   exit_r(file_get_contents2($url));
 }
+function imageresize($img, $width, $height, $enlarge=false){ //第四個參數決定小於此圖片時是否要放大
+	if (!$img){
+		return false;
+	} else {  //將圖片縮成width*height以內
+		$zoom=( ($width/ImageSX($img)) < ($height/ImageSY($img)) ? 
+				($width/ImageSX($img)) : ($height/ImageSY($img)));
+		if($zoom>1 && !$enlarge)
+			$zoom=1;
+
+		if($zoom == 1){		//大小沒有變化，直接回傳原本的img
+			return $img;
+		} else {
+			$new_x=(int)(ImageSX($img)*$zoom);
+			$new_y=(int)(ImageSY($img)*$zoom);
+			$newImg = imagecreatetruecolor($new_x,$new_y); 
+			ImageCopyResized($newImg,$img,0,0,0,0,$new_x,$new_y,ImageSX($img),ImageSY($img));
+			return $newImg;
+		}
+	}
+}
 ?>

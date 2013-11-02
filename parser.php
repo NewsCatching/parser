@@ -13,8 +13,6 @@ class Parser {
   public $og_description;
   public $referral;
   public $rss_referral;
-  public $counter;
-  public $ref_counter;
   public $publish_time;
   public $create_time;
   public $update_time;
@@ -24,10 +22,8 @@ class Parser {
     $this->url = $url;
     $this->rss_referral = $rss_referral;
     $this->guid = md5($url);
-    $this->raw = file_get_contents($url);
+    $this->raw = file_get_contents2($url);
     $this->is_support = 0;
-    $this->counter = 0;
-    $this->ref_counter = 0;
     $this->create_time = date("Y-m-d H:i:s");
     $this->update_time = date("Y-m-d H:i:s");
     $this->publish_time = "0000-00-00 00:00:00";
@@ -55,8 +51,6 @@ class Parser {
       "og_description"=>$this->og_description,
       "referral"=>$this->referral,
       "rss_referral"=>$this->rss_referral,
-      "counter"=>$this->counter,
-      "ref_counter"=>$this->ref_counter,
       "publish_time"=>$this->publish_time,
       "create_time"=>$this->create_time,
       "update_time"=>$this->update_time,
@@ -69,23 +63,52 @@ class Parser {
     return print_r(self::toArray(), true);
   }
   public function toDB(){
+    global $cfg;
     $sqlArray = self::query(
       'title', 'body', 'url', 'guid', 'og_image', 'og_description', 'og_title',
-      'referral', 'rss_referral', 'publish_time', 'create_time', 'raw', 'is_support'
+      'referral', 'rss_referral', 'publish_time', 'create_time', 'update_time', 'raw', 'is_support'
     );
     foreach($sqlArray as $key=>$value){
       $sqlArray[$key] = addslashes($value);
     }
     $result = mysqli_query_new(Parser::$mysqli_link, "
-        INSERT INTO `news` (
-          `title`, `body`, `url`, `guid`, `og_image`, `og_description`, `og_title`,
-          `referral`, `rss_referral`, `counter`, `ref_count`, `publish_time`, `update_time`, `raw`, `is_support`
-        ) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', 0, 0, '%s', '%s', '%s', %d)
-      ", 
-      $sqlArray['title'], $sqlArray['body'], $sqlArray['url'], $sqlArray['guid'], $sqlArray['og_image'], $sqlArray['og_description'], $sqlArray['og_title'],
-      $sqlArray['referral'], $sqlArray['rss_referral'], $sqlArray['publish_time'], $sqlArray['create_time'], $sqlArray['raw'], $sqlArray['is_support']
-    );
-    return mysqli_insert_id(parser::$mysqli_link);
+      SELECT `id` FROM `news` WHERE `guid` = '%s'
+    ", $sqlArray['guid']);
+
+    if($this->og_image){
+      $img = imagecreatefromstring(file_get_contents2($this->og_image));
+      if(imagesx($img) && imagesy($img)){ //有寬高，表示有抓到圖
+        $pic_path = sprintf('%s%s.png', $cfg['pic_dir'], $this->guid);
+        $thumb_path = sprintf('%s%s_t.png', $cfg['pic_dir'], $this->guid);
+        imagepng($img, $pic_path);
+        imagepng($img, $thumb_path);
+      }
+    }
+
+    if($row = mysqli_fetch_array($result)){
+      $update_id = $row['id'];
+      $result = mysqli_query_new(Parser::$mysqli_link, "
+          UPDATE `news` SET
+            `title`='%s', `body`='%s', `publish_time`='%s', `raw`='%s', `pic_path`='%s', `thumb_path`='%s', 
+            `referral`='%s', `update_time`='%s', `is_support`=%d WHERE `id`=%d
+        ", 
+        $sqlArray['title'], $sqlArray['body'], $sqlArray['publish_time'], $sqlArray['raw'], $pic_path, $thumb_path, 
+        $sqlArray['referral'], $sqlArray['update_time'], $sqlArray['is_support'], $update_id
+      );
+      return $update_id;
+    } else {
+      $result = mysqli_query_new(Parser::$mysqli_link, "
+          INSERT INTO `news` (
+            `title`, `body`, `url`, `guid`, `og_image`, `pic_path`, `thumb_path`, `og_description`, `og_title`,
+            `referral`, `rss_referral`, `publish_time`, `create_time`, `update_time`, `raw`, `is_support`
+          ) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', %d)
+        ", 
+        $sqlArray['title'], $sqlArray['body'], $sqlArray['url'], $sqlArray['guid'], $sqlArray['og_image'], $sqlArray['pic_path'], $sqlArray['thumb_path'],
+        $sqlArray['og_description'], $sqlArray['og_title'], $sqlArray['referral'], $sqlArray['rss_referral'], $sqlArray['publish_time'], $sqlArray['create_time'], 
+        $sqlArray['update_time'], $sqlArray['raw'], $sqlArray['is_support']
+      );
+      return mysqli_insert_id(parser::$mysqli_link);
+    }
   }
 }
 Parser::$mysqli_link = mysqli_link_utf8();
@@ -99,7 +122,7 @@ class YahooParser extends Parser {
     $this->og_title = pq('meta[property="og:title"]')->attr("content");
     $this->og_description = pq('meta[property="og:description"]')->attr("content");
     $this->og_image = pq('meta[property="og:image"]')->attr("content");
-    $this->referral = pq('cite.vcard .provider.org')->text();
+    $this->referral = "Yahoo!新聞";
     $this->publish_time = date("Y-m-d H:i:s", strtotime(pq('cite.vcard abbr')->attr("title")));
     if(strpos($this->body, "新聞相關影音") !== false ){
       $media_src = pq('span.yui-editorial-embed .video-wrap iframe')->attr("src");
@@ -136,7 +159,7 @@ class PeopoParser extends Parser {
     } else {
       $this->og_image = pq('meta[property="og:image"]')->attr("content");
     }
-    $this->referral = "PeoPo 公民新聞";
+    $this->referral = "公民新聞";
     $this->publish_time = date("Y-m-d H:i:s", strtotime(str_replace('.','-',pq('div.submitted:eq(0) span')->text())));
     $this->is_support = 1;
   }
