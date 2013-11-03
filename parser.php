@@ -50,7 +50,6 @@ class Parser {
         $this->is_headline = $rows['is_headline'];
         return;
       } else {
-        exit_r('why');
         throw new Exception("the url: ".$url." is not in DB");
       }
     } 
