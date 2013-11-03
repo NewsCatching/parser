@@ -38,8 +38,8 @@
 	<meta property="og:image" content="<?=$_thumb?>" />
 	<meta property="og:site_name" content="<?=$_title?>" />
 	<link rel="shortcut icon" href="/favicon.ico" />
-	<link href="http://grassboy.tw:24680/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css" />
-	<link href="http://grassboy.tw:24680/stylesheets/printer.css" media="screen, projection" rel="stylesheet" type="text/css" />
+	<link href="stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css" />
+	<link href="stylesheets/printer.css" media="screen, projection" rel="stylesheet" type="text/css" />
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js" type="text/javascript"></script>
 	<title><?=$_title?></title>
 </head>
