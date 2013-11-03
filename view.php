@@ -1,9 +1,5 @@
 <?
   include('parser.php');
-	$_title = "NEWS CATCHING 網路報民 - YAHOO HACK DAY";
-	$_thumb = "images/home_logo.png";
-	$_description = "TODO"; //TODO: 等營養協助
-	$_url = "http://news.is.gy/";
   $news_id = intval($_GET['id']);
   if(!$news_id){
     $news_id = 2354;
@@ -27,6 +23,10 @@
       "is_headline"=>0
     );
   }
+	$_title = $news_item['title']."- NEWS CATCHING 網路報民 - YAHOO HACK DAY";
+	$_thumb = $news_item['og_image'];
+	$_description = $news_item['og_description']; //TODO: 等營養協助
+	$_url = "http://news.is.gy/grassboy/view.php?id=".$news_id;
 ?>
 <!DOCTYPE HTML>
 <html>
@@ -41,7 +41,7 @@
 	<link href="http://grassboy.tw:24680/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css" />
 	<link href="http://grassboy.tw:24680/stylesheets/printer.css" media="screen, projection" rel="stylesheet" type="text/css" />
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js" type="text/javascript"></script>
-	<title><?=$news_item['title']." - ".$_title?></title>
+	<title><?=$_title?></title>
 </head>
 <body>
   <div id="main-container">
