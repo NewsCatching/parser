@@ -23,8 +23,12 @@ class Parser {
   public $is_support;
   public $is_headline;
   function __construct($url, $rss_referral="") {
-    if($rss_referral == "FROM_DB"){
-      $result = mysqli_query_new(Parser::$mysqli_link, "SELECT * FROM `news` WHERE `guid` = '%s' LIMIT 1", md5($url));
+    if($rss_referral == "FROM_DB" || $rss_referral == "FROM_DB_ID"){
+      if($rss_referral == "FROM_DB"){
+        $result = mysqli_query_new(Parser::$mysqli_link, "SELECT * FROM `news` WHERE `guid` = '%s' LIMIT 1", md5($url));
+      } else {
+        $result = mysqli_query_new(Parser::$mysqli_link, "SELECT * FROM `news` WHERE `id` = %d LIMIT 1", $url);
+      }
       if(mysqli_num_rows($result)) {
         $rows = mysqli_fetch_array($result);
         $this->title = $rows['title'];
@@ -46,6 +50,7 @@ class Parser {
         $this->is_headline = $rows['is_headline'];
         return;
       } else {
+        exit_r('why');
         throw new Exception("the url: ".$url." is not in DB");
       }
     } 
@@ -181,8 +186,8 @@ class DefaultParser extends Parser {
 class DBParser extends Parser {
   public function parse(){
   }
-  function __construct($url) {
-    parent::__construct($url, "FROM_DB");
+  function __construct($url, $type='FROM_DB') {
+    parent::__construct($url, $type);
     self::parse();
   }
 } 

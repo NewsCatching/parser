@@ -2,5 +2,102 @@
  * In this file you should write your main styles. (or centralize your imports)
  * Import this file using the following HTML or equivalent:
  * <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css" /> */
-
+@import "compass/css3";
+@import "compass/utilities/general/clearfix";
+@import "compass/typography/links/link-colors";
+@import "compass/utilities/sprites/base";
+@import "compass/typography/text/replacement";
 @import "compass/reset";
+body {
+  background: black;
+  color: white;
+  font-family:"微軟正黑體";
+}
+
+#main-container {
+  width: 768px;
+  margin: 0 auto;
+}
+
+nav {
+  float: left;
+  width: 200px;
+}
+article {
+    float:left;
+    margin-left: 64px;
+    width: 420px;
+}
+h2.main-referral {
+    font-size: 22px;
+}
+
+h1.main-title {
+    font-size: 28px;
+}
+article{
+  a {
+    color: cyan;
+  }
+  a:visited {
+    color: white;
+  }
+  a:hover {
+    background: cyan;
+    color:black;
+  }
+  a:action {
+    color:blue;
+  }
+}
+a.home_logo {
+  display: inline-block;
+  @include replace-text-with-dimensions('logo_196.png');
+  background-position: top center;
+}
+a.download_link {
+  margin-top: 200px;
+  background-image: url("../images/google_play.png?1383444806");
+  background-position: 50% 20%;
+  background-repeat: no-repeat;
+  display: inline-block;
+  height: 130px; //height: 196px;
+  overflow: hidden;
+  position: relative;
+  text-align: left;
+  text-indent: -119988px;
+  width: 196px;
+  position: relative;
+  .barcode {
+    @include replace-text-with-dimensions('barcode_s.png');
+    position: absolute;
+    display: inline-block;
+    left:50%;bottom:0;
+    border:3px solid white;
+    margin-left:-30px;// margin-left:-60px;
+    
+  }
+}
+
+.nav-links li{
+  text-align:center;
+}
+h2.main-referral {
+    margin: 10px 0;
+    color: #ccc;
+    font-size:16px;
+    border-bottom: 2px solid #666;
+    padding: 5px 0;
+}
+h1.main-title {
+    margin: 16px 0;
+}
+p, h1, h2, h3 {
+    margin: 5px 0;
+}
+.news-body {
+    color: #CCC;
+    font-size:14px;
+    line-height: 18px;
+}
+

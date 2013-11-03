@@ -66,3 +66,135 @@ a img {
 article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section, summary {
   display: block;
 }
+
+/* line 11, ../sass/screen.scss */
+body {
+  background: black;
+  color: white;
+  font-family: "微軟正黑體";
+}
+
+/* line 17, ../sass/screen.scss */
+#main-container {
+  width: 768px;
+  margin: 0 auto;
+}
+
+/* line 22, ../sass/screen.scss */
+nav {
+  float: left;
+  width: 200px;
+}
+
+/* line 26, ../sass/screen.scss */
+article {
+  float: left;
+  margin-left: 64px;
+  width: 420px;
+}
+
+/* line 31, ../sass/screen.scss */
+h2.main-referral {
+  font-size: 22px;
+}
+
+/* line 35, ../sass/screen.scss */
+h1.main-title {
+  font-size: 28px;
+}
+
+/* line 39, ../sass/screen.scss */
+article a {
+  color: cyan;
+}
+/* line 42, ../sass/screen.scss */
+article a:visited {
+  color: white;
+}
+/* line 45, ../sass/screen.scss */
+article a:hover {
+  background: cyan;
+  color: black;
+}
+/* line 49, ../sass/screen.scss */
+article a:action {
+  color: blue;
+}
+
+/* line 53, ../sass/screen.scss */
+a.home_logo {
+  display: inline-block;
+  text-indent: -119988px;
+  overflow: hidden;
+  text-align: left;
+  background-image: url('../images/logo_196.png?1383443238');
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  width: 207px;
+  height: 206px;
+  background-position: top center;
+}
+
+/* line 58, ../sass/screen.scss */
+a.download_link {
+  margin-top: 200px;
+  background-image: url("../images/google_play.png?1383444806");
+  background-position: 50% 20%;
+  background-repeat: no-repeat;
+  display: inline-block;
+  height: 130px;
+  overflow: hidden;
+  position: relative;
+  text-align: left;
+  text-indent: -119988px;
+  width: 196px;
+  position: relative;
+}
+/* line 71, ../sass/screen.scss */
+a.download_link .barcode {
+  text-indent: -119988px;
+  overflow: hidden;
+  text-align: left;
+  background-image: url('../images/barcode_s.png?1383445569');
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  width: 58px;
+  height: 58px;
+  position: absolute;
+  display: inline-block;
+  left: 50%;
+  bottom: 0;
+  border: 3px solid white;
+  margin-left: -30px;
+}
+
+/* line 82, ../sass/screen.scss */
+.nav-links li {
+  text-align: center;
+}
+
+/* line 85, ../sass/screen.scss */
+h2.main-referral {
+  margin: 10px 0;
+  color: #ccc;
+  font-size: 16px;
+  border-bottom: 2px solid #666;
+  padding: 5px 0;
+}
+
+/* line 92, ../sass/screen.scss */
+h1.main-title {
+  margin: 16px 0;
+}
+
+/* line 95, ../sass/screen.scss */
+p, h1, h2, h3 {
+  margin: 5px 0;
+}
+
+/* line 98, ../sass/screen.scss */
+.news-body {
+  color: #CCC;
+  font-size: 14px;
+  line-height: 18px;
+}
